@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/WhatsShaking.iml" filepath="$PROJECT_DIR$/WhatsShaking.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WhatsShaking/WhatsShaking-WhatsShaking.iml" filepath="$PROJECT_DIR$/WhatsShaking/WhatsShaking-WhatsShaking.iml" />
+    </modules>
+  </component>
+</project>
+

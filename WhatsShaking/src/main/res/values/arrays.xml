@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="page_titles">
+        <item>@string/page_title_latest</item>
+        <item>@string/page_title_map</item>
+        <item>@string/page_title_graph</item>
+    </string-array>
+</resources>
