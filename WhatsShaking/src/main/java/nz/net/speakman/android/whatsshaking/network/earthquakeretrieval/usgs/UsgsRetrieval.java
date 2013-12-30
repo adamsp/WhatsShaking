@@ -3,11 +3,13 @@ package nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.usgs;
 import android.content.Context;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.toolbox.RequestFuture;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.EarthquakeRetrieval;
 import nz.net.speakman.android.whatsshaking.network.volley.VolleyProvider;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by Adam on 28/12/13.
@@ -18,10 +20,18 @@ import java.util.List;
  */
 public class UsgsRetrieval implements EarthquakeRetrieval {
     @Override
-    public void getEarthquakes(Context ctx, Response.Listener<List<Earthquake>> listener, Response.ErrorListener errorListener) {
+    public List<Earthquake> getEarthquakes(Context ctx) {
+        RequestFuture<List<Earthquake>> future = RequestFuture.newFuture();
         String url = getEndpoint(ctx);
         RequestQueue queue = VolleyProvider.getQueue(ctx);
-        queue.add(new UsgsJsonRequest(url, listener, errorListener));
+        queue.add(new UsgsJsonRequest(url, future, future));
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            return null;
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
 
     /**

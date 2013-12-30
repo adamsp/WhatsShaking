@@ -1,5 +1,9 @@
 package nz.net.speakman.android.whatsshaking.activities;
 
+import android.content.Intent;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -14,10 +18,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import nz.net.speakman.android.whatsshaking.R;
 import nz.net.speakman.android.whatsshaking.fragments.EarthquakeListFragment;
+import nz.net.speakman.android.whatsshaking.model.Earthquake;
+import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.EarthquakeLoader;
 
-public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener {
+public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener,
+        LoaderManager.LoaderCallbacks<Boolean> {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -47,6 +55,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, EarthquakeListFragment.newInstance())
                 .commit();
+        getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -95,4 +104,24 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         return true;
     }
 
+    @Override
+    public Loader<Boolean> onCreateLoader(int i, Bundle bundle) {
+        EarthquakeLoader loader = new EarthquakeLoader(getApplicationContext());
+        loader.forceLoad();
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Boolean> booleanLoader, Boolean success) {
+        if (success) {
+            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Earthquake.DATA_UPDATED));
+        } else {
+            Toast.makeText(this, "Something terrible has happened.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Boolean> booleanLoader) {
+
+    }
 }

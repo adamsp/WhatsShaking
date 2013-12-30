@@ -38,7 +38,7 @@ public class EarthquakeListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return mEarthquakes == null ? 0 : mEarthquakes.get(position).getId();
+        return mEarthquakes == null ? 0 : mEarthquakes.get(position).getPrimaryId().hashCode();
     }
 
     @Override
