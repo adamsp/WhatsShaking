@@ -19,11 +19,15 @@ import java.util.List;
 public class EarthquakeListAdapter extends BaseAdapter {
 
     private final Context mContext;
-    private final List<Earthquake> mEarthquakes;
+    private List<Earthquake> mEarthquakes;
 
-    public EarthquakeListAdapter(Context ctx, List<Earthquake> earthquakes) {
+    public EarthquakeListAdapter(Context ctx) {
         mContext = ctx;
+    }
+
+    public void setEarthquakes(List<Earthquake> earthquakes) {
         mEarthquakes = earthquakes;
+        notifyDataSetChanged();
     }
 
     @Override

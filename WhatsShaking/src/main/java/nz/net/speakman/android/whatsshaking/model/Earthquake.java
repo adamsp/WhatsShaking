@@ -19,6 +19,9 @@ public class Earthquake {
         return DaoManager.createDao(connectionSource, Earthquake.class);
     }
 
+    public static final int LOADER_NETWORK = 0;
+    public static final int LOADER_DB = 1;
+
     public static final String DATA_UPDATED = "nz.net.speakman.whatsshaking.model.Earthquake.DATA_UPDATED";
 
     public static final int TSUNAMI_UNLIKELY = 0;
