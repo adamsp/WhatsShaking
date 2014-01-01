@@ -52,8 +52,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, EarthquakeListFragment.newInstance(), FRAGMENT_TAG_EARTHQUAKE_LIST)
                     .commit();
-            getSupportLoaderManager().initLoader(0, null, this);
+            retrieveNewEarthquakes();
         }
+    }
+
+    public void retrieveNewEarthquakes() {
+        getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -113,6 +117,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
     @Override
     public void onLoadFinished(Loader<Boolean> booleanLoader, Boolean success) {
+        getSupportLoaderManager().destroyLoader(booleanLoader.getId());
         if (success) {
             LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Earthquake.DATA_UPDATED));
         } else {
