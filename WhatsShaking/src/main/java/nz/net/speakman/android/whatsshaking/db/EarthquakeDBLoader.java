@@ -13,6 +13,7 @@ import java.util.List;
  */
 public class EarthquakeDBLoader extends AsyncTaskLoader<List<Earthquake>> {
 
+    // TODO We shouldn't load all quakes ast once - 'last 30 days' for December 2013 gives ~1000 earthquakes > 2.5 mag.
     // TODO Implement filtering!
     public EarthquakeDBLoader(Context context) {
         super(context);

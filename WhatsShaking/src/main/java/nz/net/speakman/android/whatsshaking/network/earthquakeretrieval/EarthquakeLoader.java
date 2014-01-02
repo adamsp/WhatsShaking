@@ -6,6 +6,8 @@ import com.j256.ormlite.dao.Dao;
 import nz.net.speakman.android.whatsshaking.db.DBHelper;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.usgs.UsgsRetrieval;
+import nz.net.speakman.android.whatsshaking.preferences.Preferences;
+import org.joda.time.DateTime;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -28,6 +30,10 @@ public class EarthquakeLoader extends AsyncTaskLoader<Boolean> {
             return false;
         }
         boolean success = storeEarthquakesInDb(earthquakes);
+        // If we succeeded in downloading & storing quakes, update our "last checked" date to now.
+        if (success) {
+            new Preferences(getContext()).setLastCheckedDate(new DateTime());
+        }
         return success;
     }
 
