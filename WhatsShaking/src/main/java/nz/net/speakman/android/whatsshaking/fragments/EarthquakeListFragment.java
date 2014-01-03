@@ -35,10 +35,10 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mPullToRefreshLayout != null) {
-                mPullToRefreshLayout.setRefreshComplete();
+            hideRefreshUI();
+            if (intent.getAction().equals(Earthquake.DATA_UPDATED)) {
+                updateAdapter(true);
             }
-            updateAdapter(true);
         }
     };
     private LocalBroadcastManager mBroadcastMgr;
@@ -82,6 +82,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         mDBHelper = DBHelper.getInstance(getActivity());
         mBroadcastMgr = LocalBroadcastManager.getInstance(getActivity());
         mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(Earthquake.DATA_UPDATED));
+        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(Earthquake.DATA_RETRIEVAL_FAILED));
         updateAdapter(false);
     }
 
@@ -140,6 +141,12 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         Activity activity = getActivity();
         if (activity != null && activity instanceof MainActivity) {
             ((MainActivity)activity).retrieveNewEarthquakes();
+        }
+    }
+
+    private void hideRefreshUI() {
+        if (mPullToRefreshLayout != null) {
+            mPullToRefreshLayout.setRefreshComplete();
         }
     }
 }

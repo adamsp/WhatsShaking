@@ -13,6 +13,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 import nz.net.speakman.android.whatsshaking.R;
 import nz.net.speakman.android.whatsshaking.fragments.EarthquakeListFragment;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
@@ -56,8 +58,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         }
     }
 
-    public void retrieveNewEarthquakes() {
-        getSupportLoaderManager().initLoader(0, null, this);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Crouton.cancelAllCroutons();
     }
 
     @Override
@@ -108,6 +112,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         return true;
     }
 
+    public void retrieveNewEarthquakes() {
+        getSupportLoaderManager().initLoader(0, null, this);
+    }
+
     @Override
     public Loader<Boolean> onCreateLoader(int i, Bundle bundle) {
         EarthquakeLoader loader = new EarthquakeLoader(getApplicationContext());
@@ -121,7 +129,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         if (success) {
             LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Earthquake.DATA_UPDATED));
         } else {
-            Toast.makeText(this, "Something terrible has happened.", Toast.LENGTH_SHORT).show();
+            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Earthquake.DATA_RETRIEVAL_FAILED));
+            Crouton.makeText(this, R.string.toast_check_connectivity, Style.ALERT).show();
         }
     }
 
