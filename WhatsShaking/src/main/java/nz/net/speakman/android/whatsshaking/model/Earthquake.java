@@ -50,9 +50,6 @@ public class Earthquake {
     public static final String EVENT_TYPE_QUARRY = "quarry";
     public static final String EVENT_TYPE_UNKNOWN = "unknown";
 
-    @DatabaseField(generatedId = true, columnName = EarthquakeDbContract.Columns.Id)
-    private int _id;
-
     @DatabaseField(columnName = EarthquakeDbContract.Columns.Magnitude)
     private double magnitude;
 
@@ -66,7 +63,7 @@ public class Earthquake {
      * A unique identifier for the event. This is the current preferred id for the event, and may change over time as
      * superior reports come in from various networks.
      */
-    @DatabaseField(unique = true, columnName = EarthquakeDbContract.Columns.PrimaryId)
+    @DatabaseField(id = true, columnName = EarthquakeDbContract.Columns.PrimaryId)
     private String primaryId;
 
     /**
@@ -334,6 +331,13 @@ public class Earthquake {
         return primaryId;
     }
 
+    /**
+     * The same as {@code getPrimaryId()}.
+     */
+    public String getId() {
+        return getPrimaryId();
+    }
+
     public void setPrimaryId(String primaryId) {
         this.primaryId = primaryId;
     }
@@ -453,10 +457,6 @@ public class Earthquake {
 
     public void setDepth(double depth) {
         this.depth = depth;
-    }
-
-    public int getId() {
-        return _id;
     }
 }
 
