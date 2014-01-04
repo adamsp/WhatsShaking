@@ -109,6 +109,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         return true;
     }
 
+    public void onEarthquakeClick(String earthquakeId) {
+        // Handle click here so we can do different things depending on layout.
+        EarthquakeDetailActivity.navigateTo(this, earthquakeId);
+    }
+
+
     public void retrieveNewEarthquakes() {
         getSupportLoaderManager().initLoader(Earthquake.LOADER_NETWORK, null, this);
     }

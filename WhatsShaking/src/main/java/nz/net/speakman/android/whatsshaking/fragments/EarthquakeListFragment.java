@@ -15,10 +15,13 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import nz.net.speakman.android.whatsshaking.activities.EarthquakeDetailActivity;
 import nz.net.speakman.android.whatsshaking.activities.MainActivity;
 import nz.net.speakman.android.whatsshaking.adapters.EarthquakeListCursorAdapter;
 import nz.net.speakman.android.whatsshaking.db.DBHelper;
 import nz.net.speakman.android.whatsshaking.db.EarthquakeDBLoader;
+import nz.net.speakman.android.whatsshaking.db.EarthquakeDbContract;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
@@ -96,6 +99,18 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         }
     }
 
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        Activity activity = getActivity();
+        if (mAdapter == null || activity == null) {
+            return;
+        }
+        Cursor cursor = (Cursor)mAdapter.getItem(position);
+        String quakeId = cursor.getString(cursor.getColumnIndex(EarthquakeDbContract.Columns.PrimaryId));
+        ((MainActivity)activity).onEarthquakeClick(quakeId);
+    }
+
     private void updateAdapter(boolean forceNewLoader) {
         FragmentActivity activity = getActivity();
         if (activity == null) return;
@@ -107,7 +122,6 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
             // Just reconnect to existing one, if one exists.
             activity.getSupportLoaderManager().initLoader(Earthquake.LOADER_DB, null, this);
         }
-
     }
 
     @Override
