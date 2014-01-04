@@ -1,6 +1,7 @@
 package nz.net.speakman.android.whatsshaking.db;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.v4.content.AsyncTaskLoader;
 import com.j256.ormlite.dao.Dao;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
@@ -11,26 +12,34 @@ import java.util.List;
 /**
  * Created by Adam on 31/12/13.
  */
-public class EarthquakeDBLoader extends AsyncTaskLoader<List<Earthquake>> {
+public class EarthquakeDBLoader extends AsyncTaskLoader<Cursor> {
 
-    // TODO We shouldn't load all quakes ast once - 'last 30 days' for December 2013 gives ~1000 earthquakes > 2.5 mag.
-    // TODO Implement filtering!
-    public EarthquakeDBLoader(Context context) {
+    private static final String[] mListProjection = {
+            EarthquakeDbContract.Columns.Id,
+            EarthquakeDbContract.Columns.Place,
+            EarthquakeDbContract.Columns.Magnitude,
+            EarthquakeDbContract.Columns.EventTime
+    };
+
+    private String mWhereClause;
+
+    private static final String mListSortOrder = EarthquakeDbContract.Columns.EventTime + " DESC";
+
+    // TODO Loading a Cursor is good (better than 1000+ quakes), but Android can do this for us if we implement a ContentProvider.
+    public EarthquakeDBLoader(Context context, String whereClause) {
         super(context);
+        mWhereClause = whereClause;
     }
 
     @Override
-    public List<Earthquake> loadInBackground() {
+    public Cursor loadInBackground() {
         DBHelper helper = DBHelper.getInstance(getContext());
-        List<Earthquake> earthquakes = null;
-        try {
-            Dao<Earthquake,Integer> dao = Earthquake.getDao(helper.getConnectionSource());
-            earthquakes = dao.queryBuilder().orderBy("eventTime", false).query();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            DBHelper.releaseHelper();
-        }
-        return earthquakes;
+        return helper.getReadableDatabase().query(EarthquakeDbContract.TableName,
+                mListProjection,
+                mWhereClause,
+                null,
+                null,
+                null,
+                mListSortOrder);
     }
 }

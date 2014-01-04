@@ -1,18 +1,15 @@
 package nz.net.speakman.android.whatsshaking.activities;
 
 import android.content.Intent;
-import android.support.v4.app.FragmentManager;
+import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 import nz.net.speakman.android.whatsshaking.R;
@@ -113,7 +110,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     }
 
     public void retrieveNewEarthquakes() {
-        getSupportLoaderManager().initLoader(0, null, this);
+        getSupportLoaderManager().initLoader(Earthquake.LOADER_NETWORK, null, this);
     }
 
     @Override

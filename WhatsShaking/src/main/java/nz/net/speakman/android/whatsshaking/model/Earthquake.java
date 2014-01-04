@@ -5,6 +5,7 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.DatabaseTable;
+import nz.net.speakman.android.whatsshaking.db.EarthquakeDbContract;
 
 import java.sql.SQLException;
 import java.util.Locale;
@@ -12,7 +13,7 @@ import java.util.Locale;
 /**
  * Created by Adam on 28/12/13.
  */
-@DatabaseTable(tableName = "earthquakes")
+@DatabaseTable(tableName = EarthquakeDbContract.TableName)
 public class Earthquake {
 
     public static Dao<Earthquake, Integer> getDao(ConnectionSource connectionSource) throws SQLException {
@@ -49,14 +50,31 @@ public class Earthquake {
     public static final String EVENT_TYPE_QUARRY = "quarry";
     public static final String EVENT_TYPE_UNKNOWN = "unknown";
 
-    @DatabaseField
+    @DatabaseField(generatedId = true, columnName = EarthquakeDbContract.Columns.Id)
+    private int _id;
+
+    @DatabaseField(columnName = EarthquakeDbContract.Columns.Magnitude)
     private double magnitude;
 
-    @DatabaseField
+    @DatabaseField(columnName = EarthquakeDbContract.Columns.Place)
     private String place;
 
-    @DatabaseField
+    @DatabaseField(columnName = EarthquakeDbContract.Columns.EventTime)
     private long eventTime;
+
+    /**
+     * A unique identifier for the event. This is the current preferred id for the event, and may change over time as
+     * superior reports come in from various networks.
+     */
+    @DatabaseField(unique = true, columnName = EarthquakeDbContract.Columns.PrimaryId)
+    private String primaryId;
+
+    /**
+     * The {@code primaryId} will exist in this comma delimited list, along with all the other unique IDs reported from
+     * the different networks.
+     */
+    @DatabaseField
+    private String allPotentialPrimaryIds;
 
     @DatabaseField
     private long updatedTime;
@@ -84,7 +102,7 @@ public class Earthquake {
      * Returned as 'MMI' in an earthquake from USGS. Is computed automatically by ShakeMap.
      * http://earthquake.usgs.gov/research/shakemap/
      */
-    @DatabaseField
+    @DatabaseField(columnName = EarthquakeDbContract.Columns.CalculatedIntensity)
     private double calculatedIntensity;
 
     @DatabaseField
@@ -110,27 +128,6 @@ public class Earthquake {
     @DatabaseField
     private String primaryReportingNetworkEventId;
 
-    /**
-     * A unique identifier for the event. This is the current preferred id for the event, and may change over time.
-     */
-    @DatabaseField(id = true)
-    private String primaryId;
-
-    @DatabaseField
-    private String allPotentialPrimaryIds;
-
-    /**
-     * },
-     * geometry: {
-     * type: "Point",
-     * coordinates: [
-     * longitude,
-     * latitude,
-     * depth
-     * ]
-     * },
-     */
-
     @DatabaseField
     private String sources;
 
@@ -155,13 +152,13 @@ public class Earthquake {
     @DatabaseField
     private String eventType;
 
-    @DatabaseField
+    @DatabaseField(columnName = EarthquakeDbContract.Columns.Longitude)
     private double longitude;
 
-    @DatabaseField
+    @DatabaseField(columnName = EarthquakeDbContract.Columns.Latitude)
     private double latitude;
 
-    @DatabaseField
+    @DatabaseField(columnName = EarthquakeDbContract.Columns.Depth)
     private double depth;
 
     public double getMagnitude() {
@@ -456,6 +453,10 @@ public class Earthquake {
 
     public void setDepth(double depth) {
         this.depth = depth;
+    }
+
+    public int getId() {
+        return _id;
     }
 }
 

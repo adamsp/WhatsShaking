@@ -5,18 +5,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
-import android.view.LayoutInflater;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
 import android.view.ViewGroup;
-import nz.net.speakman.android.whatsshaking.R;
 import nz.net.speakman.android.whatsshaking.activities.MainActivity;
-import nz.net.speakman.android.whatsshaking.adapters.EarthquakeListAdapter;
+import nz.net.speakman.android.whatsshaking.adapters.EarthquakeListCursorAdapter;
 import nz.net.speakman.android.whatsshaking.db.DBHelper;
 import nz.net.speakman.android.whatsshaking.db.EarthquakeDBLoader;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
@@ -24,12 +24,10 @@ import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLa
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
-import java.util.List;
-
 /**
  * Created by Adam on 29/12/13.
  */
-public class EarthquakeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<Earthquake>>, OnRefreshListener {
+public class EarthquakeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>, OnRefreshListener {
 
     private DBHelper mDBHelper;
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -42,7 +40,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         }
     };
     private LocalBroadcastManager mBroadcastMgr;
-    private EarthquakeListAdapter mAdapter;
+    private SimpleCursorAdapter mAdapter;
     private PullToRefreshLayout mPullToRefreshLayout;
 
     public static EarthquakeListFragment newInstance() {
@@ -101,10 +99,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
     private void updateAdapter(boolean forceNewLoader) {
         FragmentActivity activity = getActivity();
         if (activity == null) return;
-        if (mAdapter == null) {
-            mAdapter = new EarthquakeListAdapter(activity);
-            setListAdapter(mAdapter);
-        }
+
         if (forceNewLoader) {
             // Force restart here; we may have filters applied before the previous query returns.
             activity.getSupportLoaderManager().restartLoader(Earthquake.LOADER_DB, null, this);
@@ -116,23 +111,28 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
     }
 
     @Override
-    public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
-        EarthquakeDBLoader earthquakeDBLoader = new EarthquakeDBLoader(getActivity());
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        // TODO implement filtering
+        EarthquakeDBLoader earthquakeDBLoader = new EarthquakeDBLoader(getActivity(), null);
         earthquakeDBLoader.forceLoad();
         return earthquakeDBLoader;
     }
 
     @Override
-    public void onLoadFinished(Loader<List<Earthquake>> listLoader, List<Earthquake> earthquakes) {
+    public void onLoadFinished(Loader<Cursor> listLoader, Cursor cursor) {
         FragmentActivity activity = getActivity();
         if (activity == null) return;
         activity.getSupportLoaderManager().destroyLoader(listLoader.getId());
-        if (mAdapter == null) return;
-        mAdapter.setEarthquakes(earthquakes);
+        if (mAdapter == null) {
+            mAdapter = new EarthquakeListCursorAdapter(activity, cursor);
+            setListAdapter(mAdapter);
+        } else {
+            mAdapter.swapCursor(cursor);
+        }
     }
 
     @Override
-    public void onLoaderReset(Loader<List<Earthquake>> listLoader) {
+    public void onLoaderReset(Loader<Cursor> listLoader) {
 
     }
 
