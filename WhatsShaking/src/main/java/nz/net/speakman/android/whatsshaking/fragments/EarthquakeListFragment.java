@@ -16,6 +16,7 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import nz.net.speakman.android.whatsshaking.activities.EarthquakeDetailActivity;
 import nz.net.speakman.android.whatsshaking.activities.MainActivity;
 import nz.net.speakman.android.whatsshaking.adapters.EarthquakeListCursorAdapter;

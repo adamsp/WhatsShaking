@@ -1,6 +1,7 @@
 package nz.net.speakman.android.whatsshaking.activities;
 
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -9,7 +10,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.PopupWindow;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 import nz.net.speakman.android.whatsshaking.R;
@@ -27,6 +31,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
      * current dropdown position.
      */
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
+
+    private PopupWindow mFiltersPopup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                         android.R.id.text1,
                         getResources().getStringArray(R.array.page_titles)),
                 this);
+
+        setupFiltersPopup();
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, EarthquakeListFragment.newInstance(), FRAGMENT_TAG_EARTHQUAKE_LIST)
@@ -59,6 +68,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     protected void onDestroy() {
         super.onDestroy();
         Crouton.cancelAllCroutons();
+        // Dismiss popup window so we don't leak it.
+        mFiltersPopup.dismiss();
     }
 
     @Override
@@ -93,10 +104,15 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.action_filter:
+                toggleFiltersPopup();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -114,6 +130,29 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         EarthquakeDetailActivity.navigateTo(this, earthquakeId);
     }
 
+    private void setupFiltersPopup() {
+        View v = getLayoutInflater().inflate(R.layout.popup_filter, null);
+        // TODO Hook up listeners & shared prefs links for views in the filter view.
+        int width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        int height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        mFiltersPopup = new PopupWindow(v, width, height);
+        // This is a workaround to make the popup auto-dismiss when tapped outside of.
+        // See http://stackoverflow.com/a/3122696/1217087
+        mFiltersPopup.setBackgroundDrawable(new BitmapDrawable());
+        mFiltersPopup.setOutsideTouchable(true);
+        // setFocusable required to ensure outside touch events simply dismiss the popup - like a Spinner.
+        mFiltersPopup.setFocusable(true);
+    }
+
+    private void toggleFiltersPopup() {
+        if (mFiltersPopup.isShowing()) {
+            mFiltersPopup.dismiss();
+        } else {
+            View view = findViewById(R.id.action_filter);
+            if (view == null) return;
+            mFiltersPopup.showAsDropDown(view, 0, -10);
+        }
+    }
 
     public void retrieveNewEarthquakes() {
         getSupportLoaderManager().initLoader(Earthquake.LOADER_NETWORK, null, this);
