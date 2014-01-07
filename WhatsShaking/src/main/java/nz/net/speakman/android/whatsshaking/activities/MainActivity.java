@@ -14,12 +14,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.PopupWindow;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 import nz.net.speakman.android.whatsshaking.R;
 import nz.net.speakman.android.whatsshaking.fragments.EarthquakeListFragment;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.EarthquakeLoader;
+import nz.net.speakman.android.whatsshaking.preferences.Preferences;
+import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
 
 public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener,
         LoaderManager.LoaderCallbacks<Boolean> {
@@ -54,8 +58,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                         getResources().getStringArray(R.array.page_titles)),
                 this);
 
-        setupFiltersPopup();
-
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, EarthquakeListFragment.newInstance(), FRAGMENT_TAG_EARTHQUAKE_LIST)
@@ -68,8 +70,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     protected void onDestroy() {
         super.onDestroy();
         Crouton.cancelAllCroutons();
-        // Dismiss popup window so we don't leak it.
-        mFiltersPopup.dismiss();
+        if (mFiltersPopup != null) {
+            // Dismiss popup window so we don't leak it.
+            mFiltersPopup.dismiss();
+        }
     }
 
     @Override
@@ -108,7 +112,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             case R.id.action_settings:
                 return true;
             case R.id.action_filter:
-                toggleFiltersPopup();
+                showFiltersPopup();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -130,28 +134,15 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         EarthquakeDetailActivity.navigateTo(this, earthquakeId);
     }
 
-    private void setupFiltersPopup() {
-        View v = getLayoutInflater().inflate(R.layout.popup_filter, null);
-        // TODO Hook up listeners & shared prefs links for views in the filter view.
-        int width = ViewGroup.LayoutParams.WRAP_CONTENT;
-        int height = ViewGroup.LayoutParams.WRAP_CONTENT;
-        mFiltersPopup = new PopupWindow(v, width, height);
-        // This is a workaround to make the popup auto-dismiss when tapped outside of.
-        // See http://stackoverflow.com/a/3122696/1217087
-        mFiltersPopup.setBackgroundDrawable(new BitmapDrawable());
-        mFiltersPopup.setOutsideTouchable(true);
-        // setFocusable required to ensure outside touch events simply dismiss the popup - like a Spinner.
-        mFiltersPopup.setFocusable(true);
-    }
-
-    private void toggleFiltersPopup() {
-        if (mFiltersPopup.isShowing()) {
-            mFiltersPopup.dismiss();
-        } else {
-            View view = findViewById(R.id.action_filter);
-            if (view == null) return;
-            mFiltersPopup.showAsDropDown(view, 0, -10);
+    private void showFiltersPopup() {
+        // Lazy load the popup window; user may never open it.
+        if (mFiltersPopup == null) {
+            // TODO Hook up some callbacks into this so we can update display when values change.
+            mFiltersPopup = new FiltersPopup(this);
         }
+        View view = findViewById(R.id.action_filter);
+        if (view == null) return;
+        mFiltersPopup.showAsDropDown(view, 0, -10);
     }
 
     public void retrieveNewEarthquakes() {
