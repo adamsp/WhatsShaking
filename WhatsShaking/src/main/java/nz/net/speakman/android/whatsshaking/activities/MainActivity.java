@@ -1,7 +1,6 @@
 package nz.net.speakman.android.whatsshaking.activities;
 
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -11,18 +10,14 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.PopupWindow;
-import android.widget.SeekBar;
-import android.widget.TextView;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 import nz.net.speakman.android.whatsshaking.R;
 import nz.net.speakman.android.whatsshaking.fragments.EarthquakeListFragment;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.EarthquakeLoader;
-import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
 
 public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener,

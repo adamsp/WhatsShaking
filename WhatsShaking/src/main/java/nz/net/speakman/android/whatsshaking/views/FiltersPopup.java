@@ -1,7 +1,10 @@
 package nz.net.speakman.android.whatsshaking.views;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
@@ -17,14 +20,11 @@ import org.joda.time.format.DateTimeFormat;
  * Created by Adam on 7/01/14.
  */
 public class FiltersPopup extends PopupWindow {
-    private final Preferences mPreferences;
-    private TextView mMagnitudeLabel;
-    private TextView mMmiLabel;
-    private TextView mDateLabel;
-    private SeekBar mMagnitudeSeekBar;
-    private SeekBar mMmiSeekBar;
-    // TODO Replace the datepicker with a number picker? Needs consideration. DatePicker is buggy with 1 month range, and range doesn't work below API 11 anyway.
-    private DatePicker mDatePicker;
+
+
+    public static final String FILTER_UPDATED_MAGNITUDE = "nz.net.speakman.android.whatsshaking.views.FILTER_UPDATED_MAGNITUDE";
+    public static final String FILTER_UPDATED_MMI = "nz.net.speakman.android.whatsshaking.views.FILTER_UPDATED_MMI";
+    public static final String FILTER_UPDATED_DATE = "nz.net.speakman.android.whatsshaking.views.FILTER_UPDATED_DATE";
 
     /**
      * Because seek bars require an integer max/progress value, we multiply our floats to suit.
@@ -32,6 +32,16 @@ public class FiltersPopup extends PopupWindow {
     private static final float SEEK_BAR_MULTIPLIER = 10.0f;
     private static final int MAGNITUDE_MAX = (int)(6 * SEEK_BAR_MULTIPLIER);
     private static final int MMI_MAX = (int)(10 * SEEK_BAR_MULTIPLIER);
+
+    private final Preferences mPreferences;
+    private final LocalBroadcastManager mBroadcastMgr;
+    private TextView mMagnitudeLabel;
+    private TextView mMmiLabel;
+    private TextView mDateLabel;
+    private SeekBar mMagnitudeSeekBar;
+    private SeekBar mMmiSeekBar;
+    // TODO Replace the datepicker with a number picker? Needs consideration. DatePicker is buggy with 1 month range, and range doesn't work below API 11 anyway.
+    private DatePicker mDatePicker;
 
     private final SeekBar.OnSeekBarChangeListener magnitudeChangedListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
@@ -46,6 +56,8 @@ public class FiltersPopup extends PopupWindow {
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             mPreferences.setMinimumMagnitude(seekBar.getProgress() / SEEK_BAR_MULTIPLIER);
+            // TODO Should I send data in these?...
+            mBroadcastMgr.sendBroadcast(new Intent(FILTER_UPDATED_MAGNITUDE));
         }
     };
 
@@ -62,6 +74,7 @@ public class FiltersPopup extends PopupWindow {
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             mPreferences.setMinimumMmi(seekBar.getProgress() / SEEK_BAR_MULTIPLIER);
+            mBroadcastMgr.sendBroadcast(new Intent(FILTER_UPDATED_MMI));
         }
     };
 
@@ -72,6 +85,7 @@ public class FiltersPopup extends PopupWindow {
             DateTime newDisplayDate = new DateTime(year, monthOfYear + 1, dayOfMonth, 0, 0);
             mPreferences.setDisplaySinceDate(newDisplayDate);
             updateDateLabel(newDisplayDate);
+            mBroadcastMgr.sendBroadcast(new Intent(FILTER_UPDATED_DATE));
         }
     };
 
@@ -80,6 +94,7 @@ public class FiltersPopup extends PopupWindow {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         mPreferences = new Preferences(activity);
+        mBroadcastMgr = LocalBroadcastManager.getInstance(activity);
         // This is a workaround to make the popup auto-dismiss when tapped outside of.
         // See http://stackoverflow.com/a/3122696/1217087
         setBackgroundDrawable(new BitmapDrawable());

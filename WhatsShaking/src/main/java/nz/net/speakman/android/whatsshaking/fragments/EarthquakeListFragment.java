@@ -16,14 +16,13 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.PopupWindow;
-import nz.net.speakman.android.whatsshaking.activities.EarthquakeDetailActivity;
 import nz.net.speakman.android.whatsshaking.activities.MainActivity;
 import nz.net.speakman.android.whatsshaking.adapters.EarthquakeListCursorAdapter;
 import nz.net.speakman.android.whatsshaking.db.DBHelper;
 import nz.net.speakman.android.whatsshaking.db.EarthquakeDBLoader;
 import nz.net.speakman.android.whatsshaking.db.EarthquakeDbContract;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
+import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -34,13 +33,21 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 public class EarthquakeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>, OnRefreshListener {
 
     private DBHelper mDBHelper;
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mDataChangeBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             hideRefreshUI();
             if (intent.getAction().equals(Earthquake.DATA_UPDATED)) {
                 updateAdapter(true);
             }
+        }
+    };
+
+    private BroadcastReceiver mFilterChangeBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // TODO Perhaps implement a delay, so we don't just hit the DB every 10ms.
+            updateAdapter(true);
         }
     };
     private LocalBroadcastManager mBroadcastMgr;
@@ -83,8 +90,14 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         super.onActivityCreated(savedInstanceState);
         mDBHelper = DBHelper.getInstance(getActivity());
         mBroadcastMgr = LocalBroadcastManager.getInstance(getActivity());
-        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(Earthquake.DATA_UPDATED));
-        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(Earthquake.DATA_RETRIEVAL_FAILED));
+
+        mBroadcastMgr.registerReceiver(mDataChangeBroadcastReceiver, new IntentFilter(Earthquake.DATA_UPDATED));
+        mBroadcastMgr.registerReceiver(mDataChangeBroadcastReceiver, new IntentFilter(Earthquake.DATA_RETRIEVAL_FAILED));
+
+        mBroadcastMgr.registerReceiver(mFilterChangeBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_MAGNITUDE));
+        mBroadcastMgr.registerReceiver(mFilterChangeBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_MMI));
+        mBroadcastMgr.registerReceiver(mFilterChangeBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_DATE));
+
         updateAdapter(false);
     }
 
@@ -92,7 +105,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
     public void onDestroy() {
         super.onDestroy();
         if (mBroadcastMgr != null) {
-            mBroadcastMgr.unregisterReceiver(mBroadcastReceiver);
+            mBroadcastMgr.unregisterReceiver(mDataChangeBroadcastReceiver);
         }
         if (mDBHelper != null) {
             mDBHelper = null;
