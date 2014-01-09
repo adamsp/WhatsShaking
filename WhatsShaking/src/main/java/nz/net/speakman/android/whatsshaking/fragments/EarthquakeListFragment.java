@@ -33,23 +33,29 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 public class EarthquakeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>, OnRefreshListener {
 
     private DBHelper mDBHelper;
-    private BroadcastReceiver mDataChangeBroadcastReceiver = new BroadcastReceiver() {
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            hideRefreshUI();
-            if (intent.getAction().equals(Earthquake.DATA_UPDATED)) {
+            String action = intent.getAction();
+            if (action.equals(Earthquake.DATA_RETRIEVAL_STARTED)) {
+                showRefreshUI();
+            }
+            else if (action.equals(FiltersPopup.FILTER_UPDATED_MAGNITUDE)
+                    || action.equals(FiltersPopup.FILTER_UPDATED_MAGNITUDE)
+                    || action.equals(FiltersPopup.FILTER_UPDATED_MAGNITUDE)){
+                // TODO Perhaps implement a delay, so we don't just hit the DB every 10ms.
                 updateAdapter(true);
+            }
+            else if (action.equals(Earthquake.DATA_RETRIEVAL_SUCCESSFUL)) {
+                hideRefreshUI();
+                updateAdapter(true);
+            } else if (action.equals(Earthquake.DATA_RETRIEVAL_FAILED)) {
+                hideRefreshUI();
             }
         }
     };
 
-    private BroadcastReceiver mFilterChangeBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // TODO Perhaps implement a delay, so we don't just hit the DB every 10ms.
-            updateAdapter(true);
-        }
-    };
     private LocalBroadcastManager mBroadcastMgr;
     private SimpleCursorAdapter mAdapter;
     private PullToRefreshLayout mPullToRefreshLayout;
@@ -91,12 +97,14 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         mDBHelper = DBHelper.getInstance(getActivity());
         mBroadcastMgr = LocalBroadcastManager.getInstance(getActivity());
 
-        mBroadcastMgr.registerReceiver(mDataChangeBroadcastReceiver, new IntentFilter(Earthquake.DATA_UPDATED));
-        mBroadcastMgr.registerReceiver(mDataChangeBroadcastReceiver, new IntentFilter(Earthquake.DATA_RETRIEVAL_FAILED));
+        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(Earthquake.DATA_RETRIEVAL_STARTED));
 
-        mBroadcastMgr.registerReceiver(mFilterChangeBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_MAGNITUDE));
-        mBroadcastMgr.registerReceiver(mFilterChangeBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_MMI));
-        mBroadcastMgr.registerReceiver(mFilterChangeBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_DATE));
+        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(Earthquake.DATA_RETRIEVAL_SUCCESSFUL));
+        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(Earthquake.DATA_RETRIEVAL_FAILED));
+
+        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_MAGNITUDE));
+        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_MMI));
+        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_DATE));
 
         updateAdapter(false);
     }
@@ -105,7 +113,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
     public void onDestroy() {
         super.onDestroy();
         if (mBroadcastMgr != null) {
-            mBroadcastMgr.unregisterReceiver(mDataChangeBroadcastReceiver);
+            mBroadcastMgr.unregisterReceiver(mBroadcastReceiver);
         }
         if (mDBHelper != null) {
             mDBHelper = null;
@@ -169,6 +177,12 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         Activity activity = getActivity();
         if (activity != null && activity instanceof MainActivity) {
             ((MainActivity)activity).retrieveNewEarthquakes();
+        }
+    }
+
+    private void showRefreshUI() {
+        if (mPullToRefreshLayout != null) {
+            mPullToRefreshLayout.setRefreshing(true);
         }
     }
 

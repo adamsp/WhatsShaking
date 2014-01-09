@@ -1,10 +1,8 @@
 package nz.net.speakman.android.whatsshaking.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -32,6 +30,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
 
     private PopupWindow mFiltersPopup;
+    private boolean mFirstLoad;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +56,20 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, EarthquakeListFragment.newInstance(), FRAGMENT_TAG_EARTHQUAKE_LIST)
                     .commit();
+            mFirstLoad = true;
+        } else {
+            mFirstLoad = false;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // We only want to auto-retrieve our quakes on first load. Since child fragments
+        // might want to update UI, they'll need to subscribe to Earthquake.DATA_RETRIEVAL_STARTED
+        // broadcasts - which they can only do after their parent Activity has been created.
+        // Therefore, we have to start retrieval after onCreate() has returned.
+        if (mFirstLoad) {
             retrieveNewEarthquakes();
         }
     }
@@ -154,10 +167,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     @Override
     public void onLoadFinished(Loader<Boolean> booleanLoader, Boolean success) {
         getSupportLoaderManager().destroyLoader(booleanLoader.getId());
-        if (success) {
-            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Earthquake.DATA_UPDATED));
-        } else {
-            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Earthquake.DATA_RETRIEVAL_FAILED));
+        if (!success) {
             Crouton.makeText(this, R.string.toast_check_connectivity, Style.ALERT).show();
         }
     }

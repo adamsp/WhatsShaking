@@ -23,8 +23,9 @@ public class Earthquake {
     public static final int LOADER_NETWORK = 0;
     public static final int LOADER_DB = 1;
 
-    public static final String DATA_UPDATED = "nz.net.speakman.whatsshaking.model.Earthquake.DATA_UPDATED";
+    public static final String DATA_RETRIEVAL_SUCCESSFUL = "nz.net.speakman.whatsshaking.model.Earthquake.DATA_RETRIEVAL_SUCCESSFUL";
     public static final String DATA_RETRIEVAL_FAILED = "nz.net.speakman.whatsshaking.model.Earthquake.DATA_RETRIEVAL_FAILED";
+    public static final String DATA_RETRIEVAL_STARTED = "nz.net.speakman.whatsshaking.model.Earthquake.DATA_RETRIEVAL_STARTED";
 
     public static final int TSUNAMI_UNLIKELY = 0;
     public static final int TSUNAMI_POSSIBLE = 1;
