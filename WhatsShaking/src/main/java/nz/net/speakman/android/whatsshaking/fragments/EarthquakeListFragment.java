@@ -22,6 +22,7 @@ import nz.net.speakman.android.whatsshaking.db.DBHelper;
 import nz.net.speakman.android.whatsshaking.db.EarthquakeDBLoader;
 import nz.net.speakman.android.whatsshaking.db.EarthquakeDbContract;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
+import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
@@ -42,8 +43,8 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
                 showRefreshUI();
             }
             else if (action.equals(FiltersPopup.FILTER_UPDATED_MAGNITUDE)
-                    || action.equals(FiltersPopup.FILTER_UPDATED_MAGNITUDE)
-                    || action.equals(FiltersPopup.FILTER_UPDATED_MAGNITUDE)){
+                    || action.equals(FiltersPopup.FILTER_UPDATED_MMI)
+                    || action.equals(FiltersPopup.FILTER_UPDATED_DATE)){
                 // TODO Perhaps implement a delay, so we don't just hit the DB every 10ms.
                 updateAdapter(true);
             }
@@ -59,6 +60,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
     private LocalBroadcastManager mBroadcastMgr;
     private SimpleCursorAdapter mAdapter;
     private PullToRefreshLayout mPullToRefreshLayout;
+    private Preferences mPreferences;
 
     public static EarthquakeListFragment newInstance() {
         return new EarthquakeListFragment();
@@ -94,6 +96,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        mPreferences = new Preferences(getActivity());
         mDBHelper = DBHelper.getInstance(getActivity());
         mBroadcastMgr = LocalBroadcastManager.getInstance(getActivity());
 
@@ -148,8 +151,8 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        // TODO implement filtering
-        EarthquakeDBLoader earthquakeDBLoader = new EarthquakeDBLoader(getActivity(), null);
+        String whereClause = buildWhereClause();
+        EarthquakeDBLoader earthquakeDBLoader = new EarthquakeDBLoader(getActivity(), whereClause);
         earthquakeDBLoader.forceLoad();
         return earthquakeDBLoader;
     }
@@ -190,5 +193,32 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         if (mPullToRefreshLayout != null) {
             mPullToRefreshLayout.setRefreshComplete();
         }
+    }
+
+    /**
+     * Builds a WHERE clause for filtering earthquakes based on the filters defined in preferences.
+     * Does not include the leading WHERE statement, as per the docs for {@code SQLiteDatabase.query(...)}.
+     */
+    private String buildWhereClause() {
+        StringBuilder sb = new StringBuilder();
+
+        // EventTime >= DisplaySinceDate
+        sb.append(EarthquakeDbContract.Columns.EventTime);
+        sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
+        sb.append(mPreferences.getDisplaySinceDate().getMillis());
+
+        // AND Magnitude >= MinimumMagnitude
+        sb.append(DBHelper.AND);
+        sb.append(EarthquakeDbContract.Columns.Magnitude);
+        sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
+        sb.append(mPreferences.getMinimumMagnitude());
+
+        // AND MMI > MinimumMmi
+        sb.append(DBHelper.AND);
+        sb.append(EarthquakeDbContract.Columns.CalculatedIntensity);
+        sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
+        sb.append(mPreferences.getMinimumMmi());
+
+        return sb.toString();
     }
 }

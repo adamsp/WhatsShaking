@@ -15,6 +15,12 @@ import java.sql.SQLException;
  */
 public class DBHelper extends OrmLiteSqliteOpenHelper {
 
+    public static final String WHERE_SYMBOL_GT = " > ";
+    public static final String WHERE_SYMBOL_GT_EQ = " >= ";
+    public static final String WHERE_SYMBOL_LT = " < ";
+    public static final String WHERE_SYMBOL_LT_EQ = " <= ";
+    public static final String AND = " AND ";
+
     private static final String DATABASE_NAME = "whatsShaking.db";
     private static final int DATABASE_VERSION = 1;
 
