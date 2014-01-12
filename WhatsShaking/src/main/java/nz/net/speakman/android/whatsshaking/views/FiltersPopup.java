@@ -1,6 +1,7 @@
 package nz.net.speakman.android.whatsshaking.views;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
@@ -35,6 +36,7 @@ public class FiltersPopup extends PopupWindow {
 
     private final Preferences mPreferences;
     private final LocalBroadcastManager mBroadcastMgr;
+    private final Context mContext;
     private TextView mMagnitudeLabel;
     private TextView mMmiLabel;
     private TextView mDateLabel;
@@ -95,6 +97,7 @@ public class FiltersPopup extends PopupWindow {
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         mPreferences = new Preferences(activity);
         mBroadcastMgr = LocalBroadcastManager.getInstance(activity);
+        mContext = activity;
         // This is a workaround to make the popup auto-dismiss when tapped outside of.
         // See http://stackoverflow.com/a/3122696/1217087
         setBackgroundDrawable(new BitmapDrawable());
@@ -141,8 +144,7 @@ public class FiltersPopup extends PopupWindow {
     }
 
     private void updateMagnitudeLabel(float minMagnitude) {
-        // TODO Make the display minimum magnitude label descriptive
-        mMagnitudeLabel.setText(String.valueOf(minMagnitude));
+        mMagnitudeLabel.setText(mContext.getString(R.string.filter_label_min_magnitude, minMagnitude));
     }
 
     private void setMagnitudeSeekInitialProgress() {
@@ -151,8 +153,7 @@ public class FiltersPopup extends PopupWindow {
     }
 
     private void updateMmiLabel(float minMmi) {
-        // TODO Make the display minimum mmi label descriptive
-        mMmiLabel.setText(String.valueOf(minMmi));
+        mMmiLabel.setText(mContext.getString(R.string.filter_label_min_mmi, minMmi));
     }
 
     private void setMmiSeekInitialProgress() {
@@ -161,8 +162,7 @@ public class FiltersPopup extends PopupWindow {
     }
 
     private void updateDateLabel(DateTime displaySince) {
-        // TODO Make the display since date label descriptive
-        mDateLabel.setText(DateTimeFormat.shortDate().print(displaySince));
+        mDateLabel.setText(mContext.getString(R.string.filter_label_date, DateTimeFormat.shortDate().print(displaySince)));
     }
 
     private void setDatePickerInitialDate() {

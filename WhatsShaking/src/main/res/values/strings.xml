@@ -11,6 +11,11 @@
     <!-- Action bar menu items -->
     <string name="action_settings">Settings</string>
     <string name="action_filter">Filter</string>
+
     <string name="toast_check_connectivity">Oops! We\'re having trouble getting the latest earthquakes. Do you have internet access?</string>
+
+    <string name="filter_label_min_magnitude">Magnitude over %.1f</string>
+    <string name="filter_label_min_mmi">Intensity over %.1f</string>
+    <string name="filter_label_date">Happened after %s</string>
 
 </resources>
