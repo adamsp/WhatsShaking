@@ -16,6 +16,6 @@
 
     <string name="filter_label_min_magnitude">Magnitude over %.1f</string>
     <string name="filter_label_min_mmi">Intensity over %.1f</string>
-    <string name="filter_label_date">Happened after %s</string>
+    <string name="filter_label_last_days_count">In the last %s days</string>
 
 </resources>

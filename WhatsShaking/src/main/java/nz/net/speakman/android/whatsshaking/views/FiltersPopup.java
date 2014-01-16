@@ -3,9 +3,9 @@ package nz.net.speakman.android.whatsshaking.views;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
@@ -17,6 +17,7 @@ import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+
 /**
  * Created by Adam on 7/01/14.
  */
@@ -25,7 +26,7 @@ public class FiltersPopup extends PopupWindow {
 
     public static final String FILTER_UPDATED_MAGNITUDE = "nz.net.speakman.android.whatsshaking.views.FILTER_UPDATED_MAGNITUDE";
     public static final String FILTER_UPDATED_MMI = "nz.net.speakman.android.whatsshaking.views.FILTER_UPDATED_MMI";
-    public static final String FILTER_UPDATED_DATE = "nz.net.speakman.android.whatsshaking.views.FILTER_UPDATED_DATE";
+    public static final String FILTER_UPDATED_DAYS_COUNT = "nz.net.speakman.android.whatsshaking.views.FILTER_UPDATED_DAYS_COUNT";
 
     /**
      * Because seek bars require an integer max/progress value, we multiply our floats to suit.
@@ -33,17 +34,17 @@ public class FiltersPopup extends PopupWindow {
     private static final float SEEK_BAR_MULTIPLIER = 10.0f;
     private static final int MAGNITUDE_MAX = (int)(6 * SEEK_BAR_MULTIPLIER);
     private static final int MMI_MAX = (int)(10 * SEEK_BAR_MULTIPLIER);
+    private static final int LAST_DAYS_MAX = 30;
 
     private final Preferences mPreferences;
     private final LocalBroadcastManager mBroadcastMgr;
     private final Context mContext;
     private TextView mMagnitudeLabel;
     private TextView mMmiLabel;
-    private TextView mDateLabel;
+    private TextView mLastDaysCountLabel;
     private SeekBar mMagnitudeSeekBar;
     private SeekBar mMmiSeekBar;
-    // TODO Replace the datepicker with a number picker? Needs consideration. DatePicker is buggy with 1 month range, and range doesn't work below API 11 anyway.
-    private DatePicker mDatePicker;
+    private SeekBar mLastDaysCountSeekBar;
 
     private final SeekBar.OnSeekBarChangeListener magnitudeChangedListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
@@ -58,7 +59,6 @@ public class FiltersPopup extends PopupWindow {
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             mPreferences.setMinimumMagnitude(seekBar.getProgress() / SEEK_BAR_MULTIPLIER);
-            // TODO Should I send data in these?...
             mBroadcastMgr.sendBroadcast(new Intent(FILTER_UPDATED_MAGNITUDE));
         }
     };
@@ -80,14 +80,20 @@ public class FiltersPopup extends PopupWindow {
         }
     };
 
-    private final DatePicker.OnDateChangedListener dateChangedListener = new DatePicker.OnDateChangedListener() {
+    private final SeekBar.OnSeekBarChangeListener lastDaysCountChangedListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
-        public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-            // We get supplied a month from 0-11; we require a month from 1-12 for JodaTime.
-            DateTime newDisplayDate = new DateTime(year, monthOfYear + 1, dayOfMonth, 0, 0);
-            mPreferences.setDisplaySinceDate(newDisplayDate);
-            updateDateLabel(newDisplayDate);
-            mBroadcastMgr.sendBroadcast(new Intent(FILTER_UPDATED_DATE));
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            updateLastDaysCountLabel(progress);
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            mPreferences.setDisplayLastDaysCount(seekBar.getProgress());
+            mBroadcastMgr.sendBroadcast(new Intent(FILTER_UPDATED_DAYS_COUNT));
         }
     };
 
@@ -124,23 +130,17 @@ public class FiltersPopup extends PopupWindow {
         updateMmiLabel(mPreferences.getMinimumMmi());
         setMmiSeekInitialProgress();
 
-        mDateLabel = (TextView) v.findViewById(R.id.filter_label_date);
-        mDatePicker = (DatePicker) v.findViewById(R.id.filter_date_picker);
-        DateTime oneMonthAgo = DateTime.now().minusMonths(1);
-        DateTime savedDate = mPreferences.getDisplaySinceDate();
-        if (savedDate.isBefore(oneMonthAgo) || savedDate.isAfter(DateTime.now())) {
-            mPreferences.setDisplaySinceDate(oneMonthAgo);
-        }
-        // TODO Min API 11 :(
-//        mDatePicker.setMinDate(oneMonthAgo.getMillis());
-//        mDatePicker.setMaxDate(System.currentTimeMillis());
-        updateDateLabel(mPreferences.getDisplaySinceDate());
-        setDatePickerInitialDate();
+        mLastDaysCountLabel = (TextView) v.findViewById(R.id.filter_label_last_days_count);
+        mLastDaysCountSeekBar = (SeekBar) v.findViewById(R.id.filter_seek_last_days_count);
+        mLastDaysCountSeekBar.setMax(LAST_DAYS_MAX);
+        updateLastDaysCountLabel(mPreferences.getDisplayLastDaysCount());
+        setLastDaysCountSeekInitialProgress();
     }
 
     private void setupListeners() {
         mMagnitudeSeekBar.setOnSeekBarChangeListener(magnitudeChangedListener);
         mMmiSeekBar.setOnSeekBarChangeListener(mmiChangedListener);
+        mLastDaysCountSeekBar.setOnSeekBarChangeListener(lastDaysCountChangedListener);
     }
 
     private void updateMagnitudeLabel(float minMagnitude) {
@@ -161,15 +161,12 @@ public class FiltersPopup extends PopupWindow {
         mMmiSeekBar.setProgress((int)(minMmi * SEEK_BAR_MULTIPLIER));
     }
 
-    private void updateDateLabel(DateTime displaySince) {
-        mDateLabel.setText(mContext.getString(R.string.filter_label_date, DateTimeFormat.shortDate().print(displaySince)));
+    private void updateLastDaysCountLabel(int daysCount) {
+        mLastDaysCountLabel.setText(mContext.getString(R.string.filter_label_last_days_count, daysCount));
     }
 
-    private void setDatePickerInitialDate() {
-        DateTime displaySince = mPreferences.getDisplaySinceDate();
-        // We require months 0-11; JodaTime provides 1-12.
-        int month = displaySince.getMonthOfYear() - 1;
-        mDatePicker.init(displaySince.getYear(), month,
-                displaySince.getDayOfMonth(), dateChangedListener);
+    private void setLastDaysCountSeekInitialProgress() {
+        int lastDaysCount = mPreferences.getDisplayLastDaysCount();
+        mLastDaysCountSeekBar.setProgress(lastDaysCount);
     }
 }

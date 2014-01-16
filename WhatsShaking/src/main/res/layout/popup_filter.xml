@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Small Text"
+            android:text="Minimum magnitude label"
             android:id="@+id/filter_label_magnitude"/>
 
         <SeekBar
@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Small Text"
+            android:text="Minimum MMI label"
             android:id="@+id/filter_label_mmi"/>
 
         <SeekBar
@@ -40,14 +40,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Small Text"
-            android:id="@+id/filter_label_date"/>
+            android:text="Last days count label"
+            android:id="@+id/filter_label_last_days_count"/>
 
-        <DatePicker
-            android:layout_width="wrap_content"
+        <SeekBar
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/filter_date_picker"
-            android:layout_gravity="center_horizontal"
-            android:calendarViewShown="false"/>
+            android:id="@+id/filter_seek_last_days_count"/>
     </LinearLayout>
 </ScrollView>

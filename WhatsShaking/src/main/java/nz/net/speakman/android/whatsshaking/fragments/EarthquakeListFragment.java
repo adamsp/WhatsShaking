@@ -24,6 +24,7 @@ import nz.net.speakman.android.whatsshaking.db.EarthquakeDbContract;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
+import org.joda.time.DateTime;
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -44,7 +45,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
             }
             else if (action.equals(FiltersPopup.FILTER_UPDATED_MAGNITUDE)
                     || action.equals(FiltersPopup.FILTER_UPDATED_MMI)
-                    || action.equals(FiltersPopup.FILTER_UPDATED_DATE)){
+                    || action.equals(FiltersPopup.FILTER_UPDATED_DAYS_COUNT)){
                 // TODO Perhaps implement a delay, so we don't just hit the DB every 10ms.
                 updateAdapter(true);
             }
@@ -107,7 +108,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
 
         mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_MAGNITUDE));
         mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_MMI));
-        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_DATE));
+        mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(FiltersPopup.FILTER_UPDATED_DAYS_COUNT));
 
         updateAdapter(false);
     }
@@ -205,7 +206,9 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         // EventTime >= DisplaySinceDate
         sb.append(EarthquakeDbContract.Columns.EventTime);
         sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
-        sb.append(mPreferences.getDisplaySinceDate().getMillis());
+        int days = mPreferences.getDisplayLastDaysCount();
+        DateTime now = DateTime.now();
+        sb.append(now.minusDays(days).getMillis());
 
         // AND Magnitude >= MinimumMagnitude
         sb.append(DBHelper.AND);
