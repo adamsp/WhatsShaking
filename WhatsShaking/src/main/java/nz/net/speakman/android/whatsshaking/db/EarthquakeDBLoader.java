@@ -18,7 +18,8 @@ public class EarthquakeDBLoader extends AsyncTaskLoader<Cursor> {
             EarthquakeDbContract.Columns.Id,
             EarthquakeDbContract.Columns.Place,
             EarthquakeDbContract.Columns.Magnitude,
-            EarthquakeDbContract.Columns.EventTime
+            EarthquakeDbContract.Columns.EventTime,
+            EarthquakeDbContract.Columns.CalculatedIntensity
     };
 
     private String mWhereClause;
