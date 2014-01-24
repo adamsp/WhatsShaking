@@ -216,11 +216,13 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
         sb.append(mPreferences.getMinimumMagnitude());
 
-        // AND MMI > MinimumMmi
-        sb.append(DBHelper.AND);
-        sb.append(EarthquakeDbContract.Columns.CalculatedIntensity);
-        sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
-        sb.append(mPreferences.getMinimumMmi());
+        if (mPreferences.getMinimumMmi() > 0) {
+            // AND MMI >= MinimumMmi
+            sb.append(DBHelper.AND);
+            sb.append(EarthquakeDbContract.Columns.CalculatedIntensity);
+            sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
+            sb.append(mPreferences.getMinimumMmi());
+        }
 
         return sb.toString();
     }
