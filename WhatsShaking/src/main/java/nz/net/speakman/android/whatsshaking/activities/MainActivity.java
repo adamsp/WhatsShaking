@@ -16,7 +16,9 @@ import nz.net.speakman.android.whatsshaking.R;
 import nz.net.speakman.android.whatsshaking.fragments.EarthquakeListFragment;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.EarthquakeLoader;
+import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
+import org.joda.time.DateTime;
 
 public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener,
         LoaderManager.LoaderCallbacks<Boolean> {
@@ -30,7 +32,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
 
     private PopupWindow mFiltersPopup;
-    private boolean mFirstLoad;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,20 +57,16 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, EarthquakeListFragment.newInstance(), FRAGMENT_TAG_EARTHQUAKE_LIST)
                     .commit();
-            mFirstLoad = true;
-        } else {
-            mFirstLoad = false;
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // We only want to auto-retrieve our quakes on first load. Since child fragments
-        // might want to update UI, they'll need to subscribe to Earthquake.DATA_RETRIEVAL_STARTED
-        // broadcasts - which they can only do after their parent Activity has been created.
-        // Therefore, we have to start retrieval after onCreate() has returned.
-        if (mFirstLoad) {
+        DateTime lastCheckedTime = new Preferences(this).getLastCheckedDate();
+        DateTime currentTime = new DateTime();
+        // Was the last time we checked for quakes greater than 1 hour ago?
+        if (lastCheckedTime.isBefore(currentTime.minusHours(1))) {
             retrieveNewEarthquakes();
         }
     }
