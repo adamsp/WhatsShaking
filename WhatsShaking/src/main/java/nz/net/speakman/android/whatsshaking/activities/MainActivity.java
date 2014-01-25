@@ -14,6 +14,7 @@ import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 import nz.net.speakman.android.whatsshaking.R;
 import nz.net.speakman.android.whatsshaking.fragments.EarthquakeListFragment;
+import nz.net.speakman.android.whatsshaking.fragments.EarthquakeMapFragment;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.EarthquakeLoader;
 import nz.net.speakman.android.whatsshaking.preferences.Preferences;
@@ -24,6 +25,13 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         LoaderManager.LoaderCallbacks<Boolean> {
 
     private static final String FRAGMENT_TAG_EARTHQUAKE_LIST = "earthquakeList";
+    private static final String FRAGMENT_TAG_EARTHQUAKE_MAP = "earthquakeMap";
+
+    private static final int NAV_POSITION_LIST = 0;
+    private static final int NAV_POSITION_MAP = 1;
+    private static final int NAV_POSITION_GRAPH = 2;
+
+    private int mCurrentlySelectedNavigationIndex;
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -57,6 +65,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, EarthquakeListFragment.newInstance(), FRAGMENT_TAG_EARTHQUAKE_LIST)
                     .commit();
+            mCurrentlySelectedNavigationIndex = NAV_POSITION_LIST;
         }
     }
 
@@ -86,8 +95,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         super.onRestoreInstanceState(savedInstanceState);
         // Restore the previously serialized current dropdown position.
         if (savedInstanceState.containsKey(STATE_SELECTED_NAVIGATION_ITEM)) {
-            getSupportActionBar().setSelectedNavigationItem(
-                    savedInstanceState.getInt(STATE_SELECTED_NAVIGATION_ITEM));
+            mCurrentlySelectedNavigationIndex = savedInstanceState.getInt(STATE_SELECTED_NAVIGATION_ITEM);
+            getSupportActionBar().setSelectedNavigationItem(mCurrentlySelectedNavigationIndex);
         }
     }
 
@@ -96,7 +105,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         super.onSaveInstanceState(outState);
         // Serialize the current dropdown position.
         outState.putInt(STATE_SELECTED_NAVIGATION_ITEM,
-                getSupportActionBar().getSelectedNavigationIndex());
+                mCurrentlySelectedNavigationIndex);
     }
 
 
@@ -126,11 +135,28 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
     @Override
     public boolean onNavigationItemSelected(int position, long id) {
-        // When the given dropdown item is selected, show its contents in the
-        // container view.
-//        getSupportFragmentManager().beginTransaction()
-//                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-//                .commit();
+        // If the user has re-selected a position (or we're updating it to suit at re-entry)
+        // then we don't want to recreate the fragment.
+        if (position == mCurrentlySelectedNavigationIndex) {
+            return true;
+        }
+        mCurrentlySelectedNavigationIndex = position;
+        switch(position) {
+            case NAV_POSITION_LIST:
+                getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, EarthquakeListFragment.newInstance(), FRAGMENT_TAG_EARTHQUAKE_LIST)
+                    .commit();
+                break;
+            case NAV_POSITION_MAP:
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, EarthquakeMapFragment.newInstance(), FRAGMENT_TAG_EARTHQUAKE_MAP)
+                        .commit();
+                break;
+            case NAV_POSITION_GRAPH:
+            default:
+                break;
+        }
+
         return true;
     }
 

@@ -152,7 +152,7 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        String whereClause = buildWhereClause();
+        String whereClause = DBHelper.buildWhereClauseFromFilter(mPreferences);
         EarthquakeDBLoader earthquakeDBLoader = new EarthquakeDBLoader(getActivity(), whereClause);
         earthquakeDBLoader.forceLoad();
         return earthquakeDBLoader;
@@ -194,36 +194,5 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
         if (mPullToRefreshLayout != null) {
             mPullToRefreshLayout.setRefreshComplete();
         }
-    }
-
-    /**
-     * Builds a WHERE clause for filtering earthquakes based on the filters defined in preferences.
-     * Does not include the leading WHERE statement, as per the docs for {@code SQLiteDatabase.query(...)}.
-     */
-    private String buildWhereClause() {
-        StringBuilder sb = new StringBuilder();
-
-        // EventTime >= DisplaySinceDate
-        sb.append(EarthquakeDbContract.Columns.EventTime);
-        sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
-        int days = mPreferences.getDisplayLastDaysCount();
-        DateTime now = DateTime.now();
-        sb.append(now.minusDays(days).getMillis());
-
-        // AND Magnitude >= MinimumMagnitude
-        sb.append(DBHelper.AND);
-        sb.append(EarthquakeDbContract.Columns.Magnitude);
-        sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
-        sb.append(mPreferences.getMinimumMagnitude());
-
-        if (mPreferences.getMinimumMmi() > 0) {
-            // AND MMI >= MinimumMmi
-            sb.append(DBHelper.AND);
-            sb.append(EarthquakeDbContract.Columns.CalculatedIntensity);
-            sb.append(DBHelper.WHERE_SYMBOL_GT_EQ);
-            sb.append(mPreferences.getMinimumMmi());
-        }
-
-        return sb.toString();
     }
 }

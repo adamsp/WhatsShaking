@@ -2,6 +2,7 @@
   <library name="ComGithubChrisbanesActionbarpulltorefreshExtraAbc093.aar">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/WhatsShaking/build/exploded-bundles/ComGithubChrisbanesActionbarpulltorefreshExtraAbc093.aar/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/WhatsShaking/build/exploded-bundles/ComGithubChrisbanesActionbarpulltorefreshExtraAbc093.aar/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
