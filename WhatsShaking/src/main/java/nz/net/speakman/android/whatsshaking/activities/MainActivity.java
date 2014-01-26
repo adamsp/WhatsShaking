@@ -15,8 +15,9 @@ import de.keyboardsurfer.android.widget.crouton.Style;
 import nz.net.speakman.android.whatsshaking.R;
 import nz.net.speakman.android.whatsshaking.fragments.EarthquakeListFragment;
 import nz.net.speakman.android.whatsshaking.fragments.EarthquakeMapFragment;
+import nz.net.speakman.android.whatsshaking.loaders.LoaderIds;
+import nz.net.speakman.android.whatsshaking.loaders.NetworkLoader;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
-import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.EarthquakeLoader;
 import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
 import org.joda.time.DateTime;
@@ -177,12 +178,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     }
 
     public void retrieveNewEarthquakes() {
-        getSupportLoaderManager().initLoader(Earthquake.LOADER_NETWORK, null, this);
+        getSupportLoaderManager().initLoader(LoaderIds.LOADER_NETWORK, null, this);
     }
 
     @Override
     public Loader<Boolean> onCreateLoader(int i, Bundle bundle) {
-        EarthquakeLoader loader = new EarthquakeLoader(getApplicationContext());
+        NetworkLoader loader = new NetworkLoader(getApplicationContext());
         loader.forceLoad();
         return loader;
     }

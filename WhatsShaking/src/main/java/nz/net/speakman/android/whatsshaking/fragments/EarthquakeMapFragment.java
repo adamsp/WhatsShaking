@@ -19,6 +19,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.j256.ormlite.dao.Dao;
 import nz.net.speakman.android.whatsshaking.activities.EarthquakeDetailActivity;
 import nz.net.speakman.android.whatsshaking.db.DBHelper;
+import nz.net.speakman.android.whatsshaking.loaders.DbListLoader;
+import nz.net.speakman.android.whatsshaking.loaders.LoaderIds;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
@@ -68,7 +70,7 @@ public class EarthquakeMapFragment extends SupportMapFragment implements LoaderM
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mPreferences = new Preferences(getActivity());
-        mDBHelper = DBHelper.getInstance(getActivity());
+
         mBroadcastMgr = LocalBroadcastManager.getInstance(getActivity());
 
         mBroadcastMgr.registerReceiver(mBroadcastReceiver, new IntentFilter(Earthquake.DATA_RETRIEVAL_STARTED));
@@ -101,30 +103,16 @@ public class EarthquakeMapFragment extends SupportMapFragment implements LoaderM
 
         if (forceNewLoader) {
             // Force restart here; we may have filters applied before the previous query returns.
-            activity.getSupportLoaderManager().restartLoader(Earthquake.LOADER_DB, null, this);
+            activity.getSupportLoaderManager().restartLoader(LoaderIds.LOADER_LIST, null, this);
         } else {
             // Just reconnect to existing one, if one exists.
-            activity.getSupportLoaderManager().initLoader(Earthquake.LOADER_DB, null, this);
+            activity.getSupportLoaderManager().initLoader(LoaderIds.LOADER_LIST, null, this);
         }
     }
 
     @Override
     public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
-        Loader<List<Earthquake>> loader = new AsyncTaskLoader<List<Earthquake>>(getActivity()) {
-            @Override
-            public List<Earthquake> loadInBackground() {
-                try {
-                    Dao<Earthquake, Integer> earthquakeDao = Earthquake.getDao(mDBHelper.getConnectionSource());
-                    return earthquakeDao.queryBuilder()
-                            .limit(MAX_EARTHQUAKES_ON_MAP)
-                            .where().raw(DBHelper.buildWhereClauseFromFilter(mPreferences))
-                            .query();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        };
+        Loader<List<Earthquake>> loader = new DbListLoader(getActivity(), MAX_EARTHQUAKES_ON_MAP);
         loader.forceLoad();
         return loader;
     }

@@ -1,4 +1,4 @@
-package nz.net.speakman.android.whatsshaking.network.earthquakeretrieval;
+package nz.net.speakman.android.whatsshaking.loaders;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +7,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.j256.ormlite.dao.Dao;
 import nz.net.speakman.android.whatsshaking.db.DBHelper;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
+import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.EarthquakeRetrieval;
 import nz.net.speakman.android.whatsshaking.network.earthquakeretrieval.usgs.UsgsRetrieval;
 import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import org.joda.time.DateTime;
@@ -18,9 +19,9 @@ import java.util.concurrent.Callable;
 /**
  * Created by Adam on 30/12/13.
  */
-public class EarthquakeLoader extends AsyncTaskLoader<Boolean> {
+public class NetworkLoader extends AsyncTaskLoader<Boolean> {
 
-    public EarthquakeLoader(Context context) {
+    public NetworkLoader(Context context) {
         super(context);
     }
 

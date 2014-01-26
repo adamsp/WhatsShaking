@@ -19,12 +19,12 @@ import android.widget.ListView;
 import nz.net.speakman.android.whatsshaking.activities.MainActivity;
 import nz.net.speakman.android.whatsshaking.adapters.EarthquakeListCursorAdapter;
 import nz.net.speakman.android.whatsshaking.db.DBHelper;
-import nz.net.speakman.android.whatsshaking.db.EarthquakeDBLoader;
+import nz.net.speakman.android.whatsshaking.loaders.DbCursorLoader;
 import nz.net.speakman.android.whatsshaking.db.EarthquakeDbContract;
+import nz.net.speakman.android.whatsshaking.loaders.LoaderIds;
 import nz.net.speakman.android.whatsshaking.model.Earthquake;
 import nz.net.speakman.android.whatsshaking.preferences.Preferences;
 import nz.net.speakman.android.whatsshaking.views.FiltersPopup;
-import org.joda.time.DateTime;
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -143,17 +143,17 @@ public class EarthquakeListFragment extends ListFragment implements LoaderManage
 
         if (forceNewLoader) {
             // Force restart here; we may have filters applied before the previous query returns.
-            activity.getSupportLoaderManager().restartLoader(Earthquake.LOADER_DB, null, this);
+            activity.getSupportLoaderManager().restartLoader(LoaderIds.LOADER_DB, null, this);
         } else {
             // Just reconnect to existing one, if one exists.
-            activity.getSupportLoaderManager().initLoader(Earthquake.LOADER_DB, null, this);
+            activity.getSupportLoaderManager().initLoader(LoaderIds.LOADER_DB, null, this);
         }
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String whereClause = DBHelper.buildWhereClauseFromFilter(mPreferences);
-        EarthquakeDBLoader earthquakeDBLoader = new EarthquakeDBLoader(getActivity(), whereClause);
+        DbCursorLoader earthquakeDBLoader = new DbCursorLoader(getActivity(), whereClause);
         earthquakeDBLoader.forceLoad();
         return earthquakeDBLoader;
     }
